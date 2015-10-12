@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+    <form action="validate_login/" method="post">
+        {% csrf_token %}
+        Enter your login<br>
+        <input id="login_field" type="text" name="login_field" value="">
+        <input type="submit" value="Validate">
+    </form>
+    Go to <a href="scheme/">scheme</a>.
+</body>
+</html>

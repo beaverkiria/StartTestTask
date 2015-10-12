@@ -14,7 +14,7 @@ def is_login_valid(login):
         [a-z,\d,.,-]{0,18}     #Then letters, digits, dots and dashes
         [a-z,\d]$              #The last symbol must be a letter or a digit
         )
-    """, re.IGNORECASE, re.VERBOSE)
+    """, re.IGNORECASE | re.VERBOSE)
     m = p.match(login)
     if m:
         return 1

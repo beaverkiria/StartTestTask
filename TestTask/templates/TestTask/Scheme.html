@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<style>
+			body {
+			    margin: 0px;
+			    padding: 0px;
+			}
+		</style>
+	</head>
+	<body>
+	    <canvas id='scheme' width="700" height="400" ></canvas>
+	    <script type="text/javascript">
+	    	function relMouseCoords(event){
+			    var totalOffsetX = 0;
+			    var totalOffsetY = 0;
+			    var canvasX = 0;
+			    var canvasY = 0;
+			    var currentElement = this;
+
+			    do{
+			        totalOffsetX += currentElement.offsetLeft - currentElement.scrollLeft;
+			        totalOffsetY += currentElement.offsetTop - currentElement.scrollTop;
+			    }
+			    while(currentElement = currentElement.offsetParent)
+
+			    canvasX = event.pageX - totalOffsetX;
+			    canvasY = event.pageY - totalOffsetY;
+
+			    return {x:canvasX, y:canvasY}
+			}
+			HTMLCanvasElement.prototype.relMouseCoords = relMouseCoords;
+
+			var rects = [];
+			var RectSide = {
+				TOP: 0,
+			    LEFT: 1,
+			    BOTTOM: 2,
+			    RIGHT: 3
+			};
+
+			var canvas = document.getElementById('scheme');
+			var context = canvas.getContext('2d');
+
+			function getRectForPoint(point) {
+			    var foundRectNumber = -1;
+				for (var i = 0; i < rects.length; ++i) {
+			    	if (rects[i].containsPoint(point.x, point.y)) {
+			        	foundRectNumber = i;
+			        } else {
+			            if (rects[i].isMouseOver) {
+			                rects[i].isMouseOver = false;
+			        		rects[i].drawRect(false);
+			            }
+			        }
+			    }
+			    return foundRectNumber;
+			}
+
+			canvas.addEventListener('mousemove', function(event) {
+			    var coords = canvas.relMouseCoords(event);
+			    var context = document.getElementById('scheme').getContext('2d');
+			    
+			    var rectNumber = getRectForPoint(coords);
+			    if (rectNumber >= 0) {
+			        if (!rects[rectNumber].isMouseOver) {
+			            rects[rectNumber].isMouseOver = true;
+			            rects[rectNumber].drawRect(true);
+			        }
+			    } else if (context.isPointInPath(coords.x, coords.y)) {
+			    	drawCloud("GSM\n3G", 26, 240, true);
+			    } else {
+					drawCloud('GSM\n3G', 26, 240, false);
+			    }
+			    
+				for (var i = 0; i < rects.length; ++i) {
+			    	if (rects[i].containsPoint(coords.x, coords.y)) {
+			            if (!rects[i].isMouseOver) {
+			                rects[i].isMouseOver = true;
+			        		rects[i].drawRect(true);
+			            }
+			        } else {
+			            if (rects[i].isMouseOver) {
+			                rects[i].isMouseOver = false;
+			        		rects[i].drawRect(false);
+			            }
+			        }
+			    }
+			})
+
+			canvas.addEventListener('mousedown', function(event) {
+				var coords = canvas.relMouseCoords(event);
+			    var context = canvas.getContext('2d');
+			    var rectNumber = getRectForPoint(coords);
+			    if (rectNumber >= 0) {
+			    	alert(rects[rectNumber].text);
+			    } else if (context.isPointInPath(coords.x, coords.y)) {
+			    	alert('GSM\n3G');
+			    }
+			})
+
+
+			var textFont = "24px";
+			var fillColor = "{{ fillColor }}", strokeColor = "#4A76A1", textColor = "black", mouseoverColor = "{{ mouseoverColor }}";
+
+			function RectWithText(x, y, text, textFont, fillColor, strokeColor, textColor, mouseoverColor) {
+				this.x = x;
+			    this.y = y;
+			    this.text = text;
+			    this.fillColor = fillColor;
+			    this.strokeColor = strokeColor;
+			    this.textColor = textColor;
+			    this.textFont = textFont;
+			    this.width = 0;
+			    this.heigth = 0;
+			    this.mouseoverColor = mouseoverColor;
+			    this.isMouseOver = false;
+			    
+			    this.drawRect = function(mouseover) {
+			        var context = document.getElementById('scheme').getContext('2d');
+			         
+			        console.log(this.textFont);
+			        context.font = this.textFont;
+			        console.log(context.font);
+					var textWidth = context.measureText(this.text).width;
+			        var textHeight = parseInt(context.font);
+			        console.log(textWidth + " " + textHeight);
+			        
+			        this.width = textWidth + 10 * 2;
+			        this.height = textHeight + 5 * 2;
+
+			        context.clearRect(x, y, this.width, this.height);
+			        
+			        context.beginPath();
+			        context.rect(x, y, this.width, this.height);
+			        
+			        if (mouseover) {
+			            context.fillStyle = this.mouseoverColor;
+			        } else {
+			            context.fillStyle = this.fillColor;
+			        }
+			        context.strokeStyle = this.strokeColor;
+			        context.fill();
+			        context.stroke();
+			        context.fillStyle = this.textColor;
+			        
+			        context.fillText(text, this.x + this.width / 2 - textWidth / 2, this.y + this.height / 2 + textHeight / 3);
+			        
+			       	context.closePath();
+			    };
+			    
+			    this.containsPoint = function(x, y) {
+			        if ((this.x <= x && x <= this.x + this.width) && (this.y <= y && y <= this.y + this.height)) {
+			            return true;
+			        } else {
+			            return false;
+			        }
+			    };
+			    
+			    this.getPointFromSide = function(side) {
+			            switch(side) {
+			                case RectSide.TOP:
+			                    return {x: this.x + this.width / 2, y: this.y};
+			                case RectSide.LEFT:
+			                    return {x: this.x, y: this.y + this.height / 2};
+			                case RectSide.BOTTOM:
+			                    return {x: this.x + this.width / 2, y: this.y + this.height};
+			                case RectSide.RIGHT:
+			                    return {x: this.x + this.width, y: this.y + this.height / 2};
+			                default: 
+			                    break;
+			            }
+			        }
+			    
+			    this.drawLineToRect = function(rect, fromSide, toSide) {
+			        var from = this.getPointFromSide(fromSide);
+			        var to = rect.getPointFromSide(toSide);
+			      
+			        var context = document.getElementById('scheme').getContext('2d');
+			        context.beginPath();
+			        context.moveTo(from.x, from.y);
+			        context.lineTo(to.x, to.y);
+			        context.strokeStyle = this.strokeColor;
+			        context.stroke();
+			    };
+			}
+
+
+			RectWithText.createDefaultRect = function(x, y, text) {
+				var rect = new RectWithText(x, y, text, textFont, fillColor, strokeColor, textColor, mouseoverColor);
+			    rect.drawRect(false);
+			    return rect;
+			}
+
+
+
+			rects.push(RectWithText.createDefaultRect(400, 175, "BSC/PCU"));
+			rects.push(RectWithText.createDefaultRect(550, 175, "MSC"));
+			rects.push(RectWithText.createDefaultRect(400, 325, "RNC"));
+			rects.push(RectWithText.createDefaultRect(600, 325, "SGSN"));
+
+			rects[0].drawLineToRect(rects[1], RectSide.RIGHT, RectSide.LEFT);
+			rects[0].drawLineToRect(rects[3], RectSide.BOTTOM, RectSide.LEFT);
+			rects[2].drawLineToRect(rects[3], RectSide.RIGHT, RectSide.LEFT);
+
+			context.beginPath();
+			var startPoint = rects[1].getPointFromSide(RectSide.RIGHT);
+			var endPoint = rects[3].getPointFromSide(RectSide.TOP);
+
+			context.moveTo(startPoint.x, startPoint.y);
+			context.lineTo(endPoint.x, startPoint.y);
+			context.lineTo(endPoint.x, endPoint.y);
+			context.stroke();
+			context.moveTo(startPoint.x, startPoint.y);
+			context.closePath();
+
+			context.beginPath();
+			startPoint = rects[0].getPointFromSide(RectSide.LEFT);
+			endPoint = rects[2].getPointFromSide(RectSide.LEFT);
+			var cloudPoint = {x: 220 + 26, y: 20 + 240};
+			context.moveTo(startPoint.x, startPoint.y);
+			context.lineTo(cloudPoint.x, cloudPoint.y);
+			context.lineTo(endPoint.x, endPoint.y);
+			context.moveTo(startPoint.x, startPoint.y);
+			context.strokeStyle = strokeColor;
+			context.stroke();
+			context.closePath();
+
+			var drawCloud = function(text, offsetX, offsetY, mouseover) {
+			    context.beginPath();
+			    context.moveTo(0 + offsetX, 0 + offsetY);
+			    context.bezierCurveTo(-40 + offsetX, 20 + offsetY, -40 + offsetX, 70 + offsetY, 60 + offsetX, 70 + offsetY);
+			    context.bezierCurveTo(80 + offsetX, 100 + offsetY, 150 + offsetX, 100 + offsetY, 170 + offsetX, 70 + offsetY);
+			    context.bezierCurveTo(250 + offsetX, 70 + offsetY, 250 + offsetX, 40 + offsetY, 220 + offsetX, 20 + offsetY);
+			    context.bezierCurveTo(260 + offsetX, -30 + offsetY, 200 + offsetX, -50 + offsetY, 170 + offsetX, -30 + offsetY);
+			    context.bezierCurveTo(150 + offsetX, -75 + offsetY, 80 + offsetX, -60 + offsetY, 80 + offsetX, -30 + offsetY);
+			    context.bezierCurveTo(30 + offsetX, -75 + offsetY, -20 + offsetX, -60 + offsetY, 0 + offsetX, 0 + offsetY);
+			    context.stroke();
+			    
+			    if (mouseover) {
+			        context.fillStyle = mouseoverColor;
+			    } else {
+			        var gradient = context.createLinearGradient(14 + offsetX, -53 + offsetY, 14 + offsetX, 92 + offsetY);
+			        gradient.addColorStop(0, "#E8FAFF");
+			        gradient.addColorStop(1, "#ADEEFF");
+			        context.fillStyle = gradient;
+			    }
+			   // context.shadowColor = '#999';
+				//context.shadowBlur = 20;
+			    //context.shadowOffsetY = 5;
+			    context.fill();
+			  //	context.shadowColor = "#000000";
+			   // context.shadowBlur = 0;
+			    //context.shadowOffsetY = 0;
+			    
+			    context.fillStyle = textColor;
+			    context.fillText(text, 100 + offsetX, 25 + offsetY);
+			   
+			    context.closePath();
+			};
+
+			drawCloud("GSM\n3G", 26, 240, false);
+			context.beginPath();
+			context.fillText("Gs",600, 200);
+			context.fillText("Gb", 560, 300);
+			context.fillText("lu-PS", 475, 350);
+			context.fillText("Abis", 285, 230)
+			context.fillText("lub", 285, 300);
+			context.closePath();
+	    </script>
+	</body>
+</html>
