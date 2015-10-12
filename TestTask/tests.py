@@ -20,3 +20,7 @@ class LoginValidatorTestCases(TestCase):
 
     def test_overflow(self):
         self.assertFalse(LoginValidator.is_login_valid('a' * 21), 'Overflow test')
+
+    def test_value_error(self):
+        with self.assertRaises(ValueError):
+            LoginValidator.is_login_valid(123)

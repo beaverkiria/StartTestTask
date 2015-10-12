@@ -5,12 +5,24 @@ import re
 
 def is_login_valid(login):
     '''
-    > a = re.match()
-    > a.
+    Regular correct test case
+    >>> is_login_valid('sadsad3213sad')
+    1
+
+    Provided login must be a string type. Overwise ValueError is raised
+    >>> is_login_valid(123)
+    Traceback (most recent call last):
+        ...
+    ValueError: Login must be a string type.
+
+    Incorrect login with digit at first position
+    >>> is_login_valid('1dsfadf3')
+    0
 
     :param login:
     :return:
     '''
+
     if not isinstance(login, basestring):
         raise ValueError('Login must be a string type.')
 
