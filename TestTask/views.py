@@ -18,6 +18,7 @@ def validate_login_page(request):
     else:
         return HttpResponseRedirect('/testtask/')
 
+
 def scheme_page(request):
     context = {'fillColor': '#E3EBF5', 'mouseoverColor': 'green'}
     return render(request, 'TestTask/Scheme.html', context)

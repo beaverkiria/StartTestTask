@@ -4,6 +4,13 @@ import re
 
 
 def is_login_valid(login):
+    '''
+    > a = re.match()
+    > a.
+
+    :param login:
+    :return:
+    '''
     if not isinstance(login, basestring):
         raise ValueError('Login must be a string type.')
 
