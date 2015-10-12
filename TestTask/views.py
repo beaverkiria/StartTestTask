@@ -14,7 +14,7 @@ def validate_login_page(request):
         if LoginValidator.is_login_valid(login):
             return HttpResponse("Entered login is correct.<br>Go <a href='/testtask'>back</a>.")
         else:
-            return HttpResponse("Entered login is not correct.<br>Go <a href='/testtask'>back</a>.")
+            return HttpResponse("Entered login is incorrect.<br>Go <a href='/testtask'>back</a>.")
     else:
         return HttpResponseRedirect('/testtask/')
 
@@ -22,3 +22,7 @@ def validate_login_page(request):
 def scheme_page(request):
     context = {'fillColor': '#E3EBF5', 'mouseoverColor': 'green'}
     return render(request, 'TestTask/Scheme.html', context)
+
+
+def redirect_to_test_task(request):
+    return HttpResponseRedirect('/testtask/')
