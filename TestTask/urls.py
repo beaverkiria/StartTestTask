@@ -7,6 +7,6 @@ from TestTask import views
 urlpatterns = patterns('',
     url(r'^$', views.login_page, name='login_page'),
     url(r'^validate_login/', views.validate_login_page, name='validate_login'),
-    url(r'^scheme', views)
+    url(r'^scheme', views.scheme_page, name='scheme')
 
 )
